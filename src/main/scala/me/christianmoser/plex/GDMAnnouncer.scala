@@ -16,6 +16,8 @@ import akka.event.Logging
 import akka.actor.{Actor, Props, ActorSystem}
 import scala.concurrent.duration._
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 
 object GDMAnnouncer {
   def props(name: String, clientId: String): Props = Props(new GDMAnnouncer(name, clientId))
@@ -66,7 +68,7 @@ class GDMAnnouncer(name: String = "Squeeze-Plex", clientId: String, playerAddres
 
   def receive = {
     case GDMAnnouncement =>
-
+      log.debug("GDMAnnouncement ...")
       val buf: Array[Byte] = new Array[Byte](1000)
 
       try {
@@ -74,7 +76,7 @@ class GDMAnnouncer(name: String = "Squeeze-Plex", clientId: String, playerAddres
         announceSocket.receive(pollPacket)
         val reader: BufferedReader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(pollPacket.getData)))
         val line: String = reader.readLine
-        log.info(line)
+        log.debug("GDMAnnouncement: {}", line)
         while (line != null) {
           if (line.contains("M-SEARCH * HTTP/1.")) {
             val announcePacket: DatagramPacket = new DatagramPacket(announceMessage.getBytes, announceMessage.length, pollPacket.getAddress, pollPacket.getPort)

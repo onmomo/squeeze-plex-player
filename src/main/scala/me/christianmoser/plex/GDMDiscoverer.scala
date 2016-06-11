@@ -24,17 +24,10 @@ class GDMDiscoverer extends Actor {
   private val discoveryPort: Int = 32414
   private val discoveryMessage: String = "M-SEARCH * HTTP/1.1\r\n\r\n"
 
-  override def preStart() {
-    log.debug("Starting GDM Discovery ...")
-
-    context.system.scheduler.scheduleOnce(5 seconds, self, GDMDiscovery)
-  }
-
-  override def postStop() = {
-  }
-
   def receive = {
     case GDMDiscovery =>
+      log.debug("Starting GDM Discovery ...")
+
       try {
         val gdmAddress: InetAddress = InetAddress.getByName(broadcastAddress)
         val discoverySocket = new DatagramSocket
@@ -68,7 +61,7 @@ class GDMDiscoverer extends Actor {
           }
 
           log.info("Found PLEX server '" + serverName + "' at " + serverAddress + ':' + serverPort)
-          PlexServer(serverName, serverAddress, serverPort)
+          sender() -> PlexServer(serverName, serverAddress, serverPort)
         }
 
         discoverySocket.close()
