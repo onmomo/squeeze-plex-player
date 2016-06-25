@@ -4,18 +4,14 @@ import java.io.BufferedReader
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.InputStreamReader
-import java.net.DatagramPacket
-import java.net.InetAddress
-import java.net.InetSocketAddress
-import java.net.MulticastSocket
-import java.net.SocketAddress
+import java.net._
 import java.util.concurrent.{ScheduledFuture, TimeUnit}
 import java.util.logging.Logger
+
 import akka.event.Logging
+import akka.actor.{Actor, ActorSystem, Props}
 
-import akka.actor.{Actor, Props, ActorSystem}
 import scala.concurrent.duration._
-
 import scala.concurrent.ExecutionContext.Implicits.global
 
 
@@ -46,7 +42,7 @@ class GDMAnnouncer(name: String = "Squeeze-Plex", clientId: String, playerAddres
   log.debug(announceMessage)
 
   val announcePort: Int = 32412
-  val interval = 2
+  val interval = 10
   var announceSocket: MulticastSocket = null
 
   override def preStart() {
@@ -54,12 +50,13 @@ class GDMAnnouncer(name: String = "Squeeze-Plex", clientId: String, playerAddres
     log.debug("Scheduling a GDMAnnouncer to go out every " + interval + " seconds")
 
     val gdmAddress = InetAddress.getByName("239.0.0.250")
-    val socketAddress = new InetSocketAddress(playerAddress, svrPort)
+    val socketAddress = new InetSocketAddress(playerAddress, announcePort)
     announceSocket = new MulticastSocket(socketAddress)
+    announceSocket.setSoTimeout(5000)
     announceSocket.setBroadcast(true)
     announceSocket.joinGroup(gdmAddress)
 
-    context.system.scheduler.schedule(interval seconds, interval seconds, self, GDMAnnouncement)
+    context.system.scheduler.schedule(1 seconds, interval seconds, self, GDMAnnouncement)
   }
 
   override def postStop() = {
@@ -69,24 +66,24 @@ class GDMAnnouncer(name: String = "Squeeze-Plex", clientId: String, playerAddres
   def receive = {
     case GDMAnnouncement =>
       log.debug("GDMAnnouncement ...")
-      val buf: Array[Byte] = new Array[Byte](1000)
-
       try {
+        val buf: Array[Byte] = new Array[Byte](1000)
         val pollPacket: DatagramPacket = new DatagramPacket(buf, buf.length)
         announceSocket.receive(pollPacket)
         val reader: BufferedReader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(pollPacket.getData)))
-        val line: String = reader.readLine
-        log.debug("GDMAnnouncement: {}", line)
-        while (line != null) {
-          if (line.contains("M-SEARCH * HTTP/1.")) {
-            val announcePacket: DatagramPacket = new DatagramPacket(announceMessage.getBytes, announceMessage.length, pollPacket.getAddress, pollPacket.getPort)
-            announceSocket.send(announcePacket)
-          }
-        }
+
+        val packetContent = Stream.continually(reader.readLine()).takeWhile(_ != null)
+         if (packetContent.contains("M-SEARCH * HTTP/1.1")) {
+           log.debug("Send GDMAnnouncement packet")
+           val announcePacket: DatagramPacket = new DatagramPacket(announceMessage.getBytes, announceMessage.length, pollPacket.getAddress, pollPacket.getPort)
+           announceSocket.send(announcePacket)
+         }
+        reader.close()
       } catch {
-        case ex: Exception => {
-          log.error(ex, "Error during GDMAnnouncement.")
-        }
+        case st: SocketTimeoutException =>
+          log.debug("GDMAnnouncement timeout, try again.")
+        case ex: Exception =>
+          log.error(ex, "Error during GDMAnnouncing.")
       }
   }
 }

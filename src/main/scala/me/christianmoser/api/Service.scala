@@ -32,6 +32,16 @@ trait Service extends Protocols with TimelineService with PlaybackService {
 
   val routes = {
     logRequestResult("akka-http-microservice") {
+      path("resources") {
+        complete {
+          logger.info("resources called")
+          Success(200)("poll", "\"<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\" ?>\\n<MediaContainer><Player title=\\\"\" + \"blubbe\"      \n//        + \"\\\" protocol=\\\"plex\\\" protocolVersion=\\\"1\\\" machineIdentifier=\\\"\" + \"1234\"\n//        + \"\\\" protocolCapabilities=\\\"navigation,playback,timeline\\\" deviceClass=\\\"stb\\\" product=\\\"\" + \"blub\"\n//        + \"\\\" /></MediaContainer>\";")
+        }
+//        "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<MediaContainer><Player title=\"" + "blubbe"
+//        + "\" protocol=\"plex\" protocolVersion=\"1\" machineIdentifier=\"" + "1234"
+//        + "\" protocolCapabilities=\"navigation,playback,timeline\" deviceClass=\"stb\" product=\"" + "blub"
+//        + "\" /></MediaContainer>";
+      } ~
       pathPrefix("player") {
         timelineRoutes ~
         playbackRoutes

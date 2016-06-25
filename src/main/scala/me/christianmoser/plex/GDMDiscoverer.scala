@@ -43,9 +43,13 @@ class GDMDiscoverer extends Actor {
         val rdr: BufferedReader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(responsePacket.getData)))
         var line: String = rdr.readLine
 
+        log.debug(line)
         if (line == "HTTP/1.0 200 OK") {
-          while ((line = rdr.readLine) != null) {
-            {
+          log.debug(line)
+          while (line != null) {
+            line = rdr.readLine()
+            log.debug(line)
+            if (line != null) {
               val parts: Array[String] = line.split(":")
               if (parts.length == 2) {
                 val name: String = parts(0)
@@ -61,7 +65,7 @@ class GDMDiscoverer extends Actor {
           }
 
           log.info("Found PLEX server '" + serverName + "' at " + serverAddress + ':' + serverPort)
-          sender() -> PlexServer(serverName, serverAddress, serverPort)
+          sender() ! PlexServer(serverName, serverAddress, serverPort)
         }
 
         discoverySocket.close()

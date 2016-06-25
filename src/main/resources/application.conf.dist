@@ -1,0 +1,22 @@
+akka {
+  loglevel = DEBUG
+}
+
+http {
+  interface = "0.0.0.0"
+  port = 7777
+}
+
+squeezeplex {
+  user = ""
+  password = ""
+  app-name = "squeeze-plex!"
+  app-version = "0.1"
+}
+
+services {
+//  ip-api {
+//    host = "ip-api.com"
+//    port = 80
+//  }
+}

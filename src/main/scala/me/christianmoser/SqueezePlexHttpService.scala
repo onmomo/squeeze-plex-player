@@ -7,7 +7,11 @@ import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
 import com.typesafe.config.ConfigFactory
 import me.christianmoser.api.Service
-import me.christianmoser.plex.{GDMAnnouncer, GDMDiscoverer, GDMDiscovery}
+import me.christianmoser.plex._
+import akka.pattern.{ask, pipe}
+import akka.util.Timeout
+import scala.concurrent.duration._
+
 
 
 object SqueezePlexHttpService extends App with Service {
@@ -24,5 +28,13 @@ object SqueezePlexHttpService extends App with Service {
   val gdmAnnouncer = system.actorOf(GDMAnnouncer.props(name = "squeeze-plex", clientId = "squeeze-device-1"))
 
   val gdmDiscoverer = system.actorOf(GDMDiscoverer.props())
-  gdmDiscoverer -> GDMDiscovery
+  implicit val timeout = Timeout(5 seconds)
+  (gdmDiscoverer ? GDMDiscovery).mapTo[PlexServer] map { plexServer =>
+    logger.info("plex server discovered " + plexServer.name)
+    (system.actorOf(PlexAuthenticator.props()) ? PlexLogin).mapTo[PlexAuthenticated] map { plexAuthenticated =>
+        logger.info(plexAuthenticated.token)
+    }
+
+  }
+
 }
