@@ -44,7 +44,7 @@ class PlexAuthenticator extends Actor with Protocols {
 
     val plexHeaders = List(
       headers.Authorization(BasicHttpCredentials(config.getString("squeezeplex.user"), config.getString("squeezeplex.password"))),
-      PlexClientIdentifier(value = "1234"),
+      PlexClientIdentifier(value = "squeeze-device-1"),
       PlexProduct(value = config.getString("squeezeplex.app-name")),
       PlexVersion(value = config.getString("squeezeplex.app-version"))
     )
