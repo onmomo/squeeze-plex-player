@@ -7,8 +7,11 @@ import akka.http.scaladsl.server.Directives._
 import akka.stream.Materializer
 import com.typesafe.config.Config
 import me.christianmoser.api.model.{ClientId, TimelineSubscriber}
-import me.christianmoser.plex.PlexServer
+import me.christianmoser.plex.{PlexServer, TimelineSubscriberActor}
 import akka.http.scaladsl.marshallers.xml.ScalaXmlSupport._
+import me.christianmoser.plex.TimelineSubscriberActor._
+import me.christianmoser.plex.Subscribe
+import me.christianmoser.plex.Unsubscribe
 
 import scala.concurrent.ExecutionContextExecutor
 
@@ -23,40 +26,48 @@ trait TimelineService extends Protocols {
 
   val logger: LoggingAdapter
 
+  lazy val timelineSubscribeActor = system.actorOf(TimelineSubscriberActor.props())
+
   def timelineRoutes = {
-//    logRequestResult("player-timeline") {
-      pathPrefix("timeline") {
-        extractClientIP { clientIP =>
-          optionalHeaderValueByName("X-Plex-Client-Identifier") { clientId =>
-            parameters('commandID, 'port.as[Int].?) { (commandId, port) =>
-              path("poll") {
-                complete {
-                  // TODO not sure if TimelineSubscriber requires the server object
-                  val server = PlexServer("blub", "0.0.0.0", 7777)
-                  val timeline = TimelineSubscriber(commandId, clientIP.toOption, port.getOrElse(0), server, clientId.map(ClientId))
-                  timeline.generateTimelineContainer(timeline.generateEmptyTimeline("music"))
+    //    logRequestResult("player-timeline") {
+    pathPrefix("timeline") {
+      extractClientIP { clientIP =>
+        optionalHeaderValueByName("X-Plex-Client-Identifier") { clientIdOption =>
+          parameters('commandID, 'port.as[Int].?) { (commandId, port) =>
+            path("poll") {
+              complete {
+                // TODO not sure if TimelineSubscriber requires the server object
+                val server = PlexServer("blub", "0.0.0.0", 7777)
+                val timeline = TimelineSubscriber(commandId, clientIP.toOption, port.getOrElse(0), server, clientIdOption.map(ClientId))
+                timeline.generateTimelineContainer(timeline.generateEmptyTimeline("music"))
+              }
+            } ~
+            path("subscribe") {
+              complete {
+                // TODO not sure if TimelineSubscriber requires the server object
+                val server = PlexServer("blub", "0.0.0.0", 7777)
+                val subscriber = TimelineSubscriber(commandId, clientIP.toOption, port.getOrElse(0), server, clientIdOption.map(ClientId))
+
+                clientIdOption foreach { clientId =>
+                  timelineSubscribeActor ! Subscribe(ClientId(clientId), subscriber)
                 }
-              } ~
-              logRequestResult("player-timeline") {
-                path("subscribe") {
-                  complete {
-                    // TODO not sure if TimelineSubscriber requires the server object
-                    val server = PlexServer("blub", "0.0.0.0", 7777)
-                    val subscriber = TimelineSubscriber(commandId, clientIP.toOption, port.getOrElse(0), server, clientId.map(ClientId))
-//                    subscriber.setHttpClient(client)
-//                    subscribers.put(clientId, subscriber)
-                    Success(200)("OK", "OK")
-                  }
-                } ~
-                path("unsubscribe") {
-                  complete {
-                    Success(200)("unsubscribe", "unsubscribe")
-                  }
-                }
+
+                Success(200)("Ok", "Ok")
+              }
+            }
+          } ~
+          path("unsubscribe") {
+            complete {
+              clientIdOption foreach { clientId =>
+                timelineSubscribeActor ! Unsubscribe(ClientId(clientId))
+              }
+
+              Success(200)("Ok", "Ok")
             }
           }
         }
       }
     }
   }
+
 }

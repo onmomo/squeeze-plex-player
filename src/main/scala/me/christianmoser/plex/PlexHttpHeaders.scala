@@ -43,3 +43,9 @@ case class PlexPlatformVersion(name: String = "X-Plex-Platform-Version", value: 
 
   override def renderInRequests(): Boolean = true
 }
+
+case class PlexProvides(name: String = "X-Plex-Provides", value: String) extends CustomHeader {
+  override def renderInResponses(): Boolean = true
+
+  override def renderInRequests(): Boolean = true
+}
