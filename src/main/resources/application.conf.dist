@@ -1,5 +1,7 @@
 akka {
-  loglevel = DEBUG
+  loggers = ["akka.event.slf4j.Slf4jLogger"]
+  loglevel = "DEBUG"
+  logging-filter = "akka.event.slf4j.Slf4jLoggingFilter"
 }
 
 http {
@@ -14,9 +16,4 @@ squeezeplex {
   app-version = "0.1"
 }
 
-services {
-//  ip-api {
-//    host = "ip-api.com"
-//    port = 80
-//  }
 }
