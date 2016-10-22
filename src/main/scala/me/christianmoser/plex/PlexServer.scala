@@ -1,5 +1,7 @@
 package me.christianmoser.plex
 
+import me.christianmoser.api.model.Track
+
 //import org.apache.http.Header;
 //import org.apache.http.HttpEntity;
 //import org.apache.http.StatusLine;

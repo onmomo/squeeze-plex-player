@@ -31,43 +31,46 @@ trait TimelineService extends Protocols {
   def timelineRoutes = {
     //    logRequestResult("player-timeline") {
     pathPrefix("timeline") {
+      //      logRequestResult("timeline-service") {
       extractClientIP { clientIP =>
         optionalHeaderValueByName("X-Plex-Client-Identifier") { clientIdOption =>
-          parameters('commandID, 'port.as[Int].?) { (commandId, port) =>
+          parameters('commandID) { (commandId) =>
             path("poll") {
               complete {
                 // TODO not sure if TimelineSubscriber requires the server object
                 val server = PlexServer("blub", "0.0.0.0", 7777)
-                val timeline = TimelineSubscriber(commandId, clientIP.toOption, port.getOrElse(0), server, clientIdOption.map(ClientId))
+                val timeline = TimelineSubscriber(commandId, clientIP.toOption, 0, server, clientIdOption.map(ClientId))
                 timeline.generateTimelineContainer(timeline.generateEmptyTimeline("music"))
               }
             } ~
-            path("subscribe") {
-              complete {
-                // TODO not sure if TimelineSubscriber requires the server object
-                val server = PlexServer("blub", "0.0.0.0", 7777)
-                val subscriber = TimelineSubscriber(commandId, clientIP.toOption, port.getOrElse(0), server, clientIdOption.map(ClientId))
+            parameters('port.as[Int]) { port =>
+              path("subscribe") {
+                complete {
+                  // TODO not sure if TimelineSubscriber requires the server object
+                  val server = PlexServer("blub", "0.0.0.0", 7777)
+                  val subscriber = TimelineSubscriber(commandId, clientIP.toOption, port, server, clientIdOption.map(ClientId))
 
-                clientIdOption foreach { clientId =>
-                  timelineSubscribeActor ! Subscribe(ClientId(clientId), subscriber)
+                  clientIdOption foreach { clientId =>
+                    timelineSubscribeActor ! Subscribe(ClientId(clientId), subscriber)
+                  }
+
+                  Success(200)("Ok", "Ok")
                 }
+              } ~
+              path("unsubscribe") {
+                complete {
+                  clientIdOption foreach { clientId =>
+                    timelineSubscribeActor ! Unsubscribe(ClientId(clientId))
+                  }
 
-                Success(200)("Ok", "Ok")
+                  Success(200)("Ok", "Ok")
+                }
               }
-            }
-          } ~
-          path("unsubscribe") {
-            complete {
-              clientIdOption foreach { clientId =>
-                timelineSubscribeActor ! Unsubscribe(ClientId(clientId))
-              }
-
-              Success(200)("Ok", "Ok")
             }
           }
         }
+        //      }
       }
     }
   }
-
 }

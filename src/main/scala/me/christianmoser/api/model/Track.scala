@@ -1,19 +1,21 @@
 package me.christianmoser.api.model
 
-case class Track(location: String,
-                 containerKey: String,
+case class Track(id: Int,
                  key: String,
-                 ratingKey: String,
-                 title: String,
-                 file: String,
+                 relPath: String,
                  duration: Int,
+                 thumb: String,
+                 title: String,
+                 location: String = "",
+                 containerKey: String = "",
+                 ratingKey: String = "",
                  state: String,
-                 currentTime: Int) extends Playable {
+                 currentTime: Int = 0) {
 
   val itemType: String = "music"
 
   override def toString: String = {
-    file + ": " + title
+    key + ": " + title
   }
 
 }

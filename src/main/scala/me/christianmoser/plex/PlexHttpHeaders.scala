@@ -32,6 +32,12 @@ case class PlexDeviceName(name: String = "X-Plex-Device-Name", value: String) ex
   override def renderInRequests(): Boolean = true
 }
 
+case class PlexToken(name: String = "X-Plex-Token", value: String) extends CustomHeader {
+  override def renderInResponses(): Boolean = true
+
+  override def renderInRequests(): Boolean = true
+}
+
 case class PlexPlatform(name: String = "X-Plex-Platform", value: String) extends CustomHeader {
   override def renderInResponses(): Boolean = true
 

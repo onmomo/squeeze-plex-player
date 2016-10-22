@@ -66,7 +66,7 @@ trait Service extends Protocols with CorsDirectives with TimelineService with Pl
       } ~
       pathPrefix("player") {
         timelineRoutes ~
-          playbackRoutes
+        playbackRoutes
       }
 //    }
     //      pathPrefix("ip") {

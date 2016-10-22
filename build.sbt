@@ -19,9 +19,9 @@ libraryDependencies ++= {
     "com.typesafe.akka" %% "akka-http-testkit" % akkaV,
     "com.typesafe.akka" %% "akka-slf4j" % akkaV,
     "org.scalatest" %% "scalatest" % scalaTestV % "test",
-    "ch.megard" %% "akka-http-cors" % "0.1.2"
+    "ch.megard" %% "akka-http-cors" % "0.1.2",
     "ch.qos.logback" % "logback-classic" % "1.1.7",
-
+    "org.clapper" %% "grizzled-slf4j" % "1.2.0"
   )
 }
 

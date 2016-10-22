@@ -65,7 +65,7 @@ class GDMAnnouncer(name: String = "Squeeze-Plex", clientId: String, playerAddres
 
   def receive = {
     case GDMAnnouncement =>
-      log.debug("GDMAnnouncement ...")
+//      log.debug("GDMAnnouncement ...")
       try {
         val buf: Array[Byte] = new Array[Byte](1000)
         val pollPacket: DatagramPacket = new DatagramPacket(buf, buf.length)
@@ -86,4 +86,5 @@ class GDMAnnouncer(name: String = "Squeeze-Plex", clientId: String, playerAddres
           log.error(ex, "Error during GDMAnnouncing.")
       }
   }
+
 }
