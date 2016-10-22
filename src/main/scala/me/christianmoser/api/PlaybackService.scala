@@ -18,23 +18,6 @@ trait PlaybackService extends Protocols {
   val logger: LoggingAdapter
 
 
-  /**
-    *
-    * http://10-0-1-55.ffabbb0515d54c4b90cbca45fa0fee6d.plex.direct:32400/player/playback/playMedia
-    * ?protocol=https
-    * &key=%2Flibrary%2Fmetadata%2F14042
-    * &address=10-0-1-55.ffabbb0515d54c4b90cbca45fa0fee6d.plex.direct
-    * &port=32400
-    * &token=transient-7da5f87d-7e7c-4d20-8b55-67ab4ddc6ad1
-    * &containerKey=%2FplayQueues%2F53%3Fown%3D1%26window%3D200
-    * &offset=13681
-    * &machineIdentifier=8b09093707aeb5f359b26b88e0332263ecf47d56
-    * &commandID=1
-    *
-    */
-
-
-
   def playbackRoutes = {
 
     val controller = new PlaybackController()
