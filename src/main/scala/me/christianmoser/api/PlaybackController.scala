@@ -14,6 +14,10 @@ class PlaybackController()(implicit system: ActorSystem) extends Logging {
     val plexServer = PlexServer(srvName, srvAddress, srvPort)
     plexServerApi.getTrack(key, plexServer, token) map { track =>
       logger.info(s"Resolved track: ${track.toString}")
+
+      // TODO forward to squeeze device
+
+      track.mediaContainer
     }
   }
 

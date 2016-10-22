@@ -39,7 +39,7 @@ class PlexServerApi()(implicit system: ActorSystem) extends ScalaXmlSupport with
               val thumb = (mediaContainer \ "Track" \ "@thumb").text
               val title = (mediaContainer \ "Track" \ "@title").text
 
-              Future.successful(Track(id, file, relPath, duration, thumb, title, state = "blubState"))
+              Future.successful(Track(id, file, relPath, duration, thumb, title, mediaContainer))
             } catch {
               case e: Exception =>
                 logger.warn("Unable to parse mediaContainer response", e)
