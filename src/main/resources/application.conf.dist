@@ -12,7 +12,9 @@ http {
 squeezeplex {
   user = ""
   password = ""
-  app-name = "squeeze-plex!"
+  lms-address = "10.0.1.5"
+  lms-cli-port = "9090"
+  app-name = "Squeezebox for Plex"
   app-version = "0.1"
 }
 

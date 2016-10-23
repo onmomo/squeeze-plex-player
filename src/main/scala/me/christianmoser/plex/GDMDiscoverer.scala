@@ -3,8 +3,9 @@ package me.christianmoser.plex
 import java.io.{BufferedReader, ByteArrayInputStream, IOException, InputStreamReader}
 import java.net._
 
-import akka.actor.{Actor, Props}
+import akka.actor.{Actor, ActorLogging, Props}
 import akka.event.Logging
+
 import scala.concurrent.duration._
 
 
@@ -16,9 +17,7 @@ sealed trait GDMDiscoveryMessage
 
 case object GDMDiscovery extends GDMDiscoveryMessage
 
-class GDMDiscoverer extends Actor {
-
-  val log = Logging(context.system, this)
+class GDMDiscoverer extends Actor with ActorLogging {
 
   private val broadcastAddress: String = "239.0.0.250"
   private val discoveryPort: Int = 32414

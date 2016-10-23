@@ -24,15 +24,16 @@ object SqueezePlexHttpService extends App with Service {
 
   Http().bindAndHandle(routes, config.getString("http.interface"), config.getInt("http.port"))
 
+  val squeezeDiscoverer = system.actorOf(SqueezeDiscoverer.props(lmsAddress = config.getString("squeezeplex.lms-address"), lmsPort = config.getInt("squeezeplex.lms-cli-port")), name = "SqueezeDiscoverer")
   // TODO announcement for each found squeeze device
-  val gdmAnnouncer = system.actorOf(GDMAnnouncer.props(name = "squeeze-plex", clientId = "squeeze-device-1"))
+  val gdmAnnouncer = system.actorOf(GDMAnnouncer.props(squeezeDiscoverer), name = "GmdAnnouncer")
 
-  val gdmDiscoverer = system.actorOf(GDMDiscoverer.props())
+  val gdmDiscoverer = system.actorOf(GDMDiscoverer.props(), name = "GdmDiscoverer")
   implicit val timeout = Timeout(5 seconds)
   (gdmDiscoverer ? GDMDiscovery).mapTo[PlexServer] map { plexServer =>
     logger.info("plex server discovered " + plexServer.name)
-    (system.actorOf(PlexAuthenticator.props()) ? PlexLogin).mapTo[PlexAuthenticated] map { plexAuthenticated =>
-        logger.info(plexAuthenticated.token)
+    (system.actorOf(PlexAuthenticator.props(squeezeDiscoverer)) ? PlexLogin).mapTo[PlexAuthenticated] map { plexAuthenticated =>
+        logger.info("Successfully logged in to plex: " + plexAuthenticated.token)
     }
 
   }
